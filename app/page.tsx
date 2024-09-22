@@ -1,101 +1,222 @@
-import Image from "next/image";
+"use client";
+import React, { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+const Home: React.FC = () => {
+    const [dreamName, setDreamName] = useState<string>('');
+    const [income, setIncome] = useState<string>('');
+    const [expenses, setExpenses] = useState<string>('');
+    const [savings, setSavings] = useState<string>('');
+    const [monthlyContribution, setMonthlyContribution] = useState<string>('');
+    const [goalAmount, setGoalAmount] = useState<string>('');
+    const [result, setResult] = useState<string>('');
+    const [parsedResult, setParsedResult] = useState({
+        time: '',
+        items: '',
+        comment: ''
+    });
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [loadingDots, setLoadingDots] = useState<string>('');
+    const [contentHeight, setContentHeight] = useState('100vh'); // 新增的動態高度 state
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isLoading) {
+            interval = setInterval(() => {
+                setLoadingDots(prev => {
+                    const dots = ['.', '..', '...'];
+                    const currentIndex = dots.indexOf(prev);
+                    return dots[(currentIndex + 1) % dots.length];
+                });
+            }, 500);
+        } else {
+            setLoadingDots('');
+        }
+        return () => clearInterval(interval);
+    }, [isLoading]);
+
+    // 動態調整頁面高度
+    useEffect(() => {
+        const updateHeight = () => {
+            const bodyHeight = document.body.scrollHeight;
+            setContentHeight(`${bodyHeight}px`);
+        };
+
+        updateHeight();
+        window.addEventListener('resize', updateHeight);
+
+        return () => window.removeEventListener('resize', updateHeight);
+    }, []);
+
+    const calculatePlan = async (): Promise<void> => {
+        console.log("計算計劃開始");
+        setIsLoading(true);
+        setResult('');
+        setParsedResult({ time: '', items: '', comment: '' });
+    
+        const incomeNum = Number(income);
+        const expensesNum = Number(expenses);
+        const savingsNum = Number(savings);
+        const goalAmountNum = Number(goalAmount);
+    
+        console.log(`每月收入: ${incomeNum}, 每月支出: ${expensesNum}, 現有夢想基金: ${savingsNum}, 每月願意付出的金額: ${monthlyContribution}, 夢想基金目標金額: ${goalAmountNum}`);
+    
+        const monthlySavings = incomeNum - expensesNum;
+        if (monthlySavings <= 0) {
+            console.log("收入不足以覆蓋支出");
+            setResult('您的收入不足以覆蓋支出，請重新檢查！');
+            setIsLoading(false);
+            return;
+        }
+    
+        const prompt = `夢想名字：${dreamName} 每月收入：${incomeNum} 元 每月支出：${expensesNum} 元 現有夢想基金：${savingsNum} 元 每月願意付出金額：${monthlyContribution} 元 夢想基金目標金額：${goalAmountNum} 元`;
+        console.log(`構建請求數據: ${prompt}`);
+    
+        try {
+            console.log("發送請求到 OpenAI API");
+            const response = await fetch('/api/openai', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt }),
+            });
+        
+            console.log("接收回應");
+            const data = await response.json();
+            console.log('API 回應:', data);
+            if (data.result) {
+                console.log("生成的回應: ", data.result);
+                parseResult(data.result);
+            } else {
+                console.log("未能生成有效的回應");
+                setResult('未能生成有效的回應，請稍後再試！');
+            }
+        } catch (error) {
+            console.error("計算過程中發生錯誤:", error);
+            setResult('計算失敗，請稍後再試！');
+        } finally {
+            setIsLoading(false);
+        }
+    
+        console.log("計算計劃結束");
+    };
+
+    const parseResult = (text: string) => {
+        const monthsMatch = text.match(/!!(\d+)!!/);
+        const itemsMatch = text.match(/@@(.+?)@@/);
+        const commentMatch = text.match(/##(.+?)##/);
+
+        let timeString = '';
+        if (monthsMatch) {
+            const months = parseInt(monthsMatch[1]);
+            if (months < 12) {
+                timeString = `${months}個月`;
+            } else {
+                const years = Math.floor(months / 12);
+                const remainingMonths = months % 12;
+                timeString = years + '年' + (remainingMonths > 0 ? remainingMonths + '個月' : '');
+            }
+        }
+
+        setParsedResult({
+            time: timeString,
+            items: itemsMatch ? itemsMatch[1] : '',
+            comment: commentMatch ? commentMatch[1] : ''
+        });
+    };
+
+    return (
+        <div className="flex items-center justify-center" style={{ minHeight: contentHeight, backgroundColor: "rgb(209 213 219)" }}>
+            <div className="bg-gray-300 p-10">
+                <div className="bg-white rounded-lg shadow-lg p-8 w-96 text-center flex flex-col space-y-4 mt-10">
+                    <h1 className="text-2xl font-bold text-black">夢想基金創造工具</h1>
+                    <div className="text-black border rounded p-4">
+                        <h2 className="text-xl mb-2">夢想名字</h2>
+                        <label className="block mb-2">
+                            <input
+                                type="text"
+                                className="border rounded w-full p-2 text-black text-center"
+                                value={dreamName}
+                                onChange={(e) => setDreamName(e.target.value)}
+                            />
+                        </label>
+                    </div>
+                    <div className="text-black border rounded p-4">
+                        <h2 className="text-xl mb-2">財務狀況</h2>
+                        <label className="block mb-2">
+                            每月收入
+                            <input
+                                type="number"
+                                className="border rounded w-full p-2 text-black text-center"
+                                value={income}
+                                onChange={(e) => setIncome(e.target.value)}
+                            />
+                        </label>
+                        <label className="block mb-2">
+                            每月支出
+                            <input
+                                type="number"
+                                className="border rounded w-full p-2 text-black text-center"
+                                value={expenses}
+                                onChange={(e) => setExpenses(e.target.value)}
+                            />
+                        </label>
+                        <label className='block mb-2'>
+                            現有夢想基金
+                            <input
+                                type="number"
+                                className="border rounded w-full p-2 text-black text-center"
+                                value={savings}
+                                onChange={(e) => setSavings(e.target.value)}
+                            />
+                        </label>
+                        <label className='block mb-2'>
+                            每月願意付出的金額
+                            <input
+                                type="number"
+                                className="border rounded w-full p-2 text-black text-center"
+                                value={monthlyContribution}
+                                onChange={(e) => setMonthlyContribution(e.target.value)}
+                            />
+                        </label>
+                    </div>
+
+                    <div className="text-black border rounded p-4">
+                        <h2 className="text-xl mb-2">夢想基金目標</h2>
+                        <label className="block mb-2">
+                            夢想基金金額
+                            <input
+                                type="number"
+                                className="border rounded w-full p-2 text-black text-center"
+                                value={goalAmount}
+                                onChange={(e) => setGoalAmount(e.target.value)}
+                            />
+                        </label>
+                    </div>
+
+                    <Button
+                        className="text-white rounded px-4 py-2"
+                        onClick={calculatePlan}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? '計算中' : '計算存錢計劃'}
+                    </Button>
+                    <div className="mt-4 text-black">
+                        {isLoading && <p className="text-xl font-bold">{loadingDots}</p>}
+                        <p>{result}</p>
+                        {parsedResult.time && (
+                            <div className="mt-4 bg-gray-100 p-4 rounded text-left">
+                                <p><strong>預計存錢時間：</strong>{parsedResult.time}</p>
+                                <p><strong>可以為夢想購買的東西：</strong>{parsedResult.items}</p>
+                                <p><strong>評語：</strong>{parsedResult.comment}</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
-}
+    );
+};
+
+export default Home;
