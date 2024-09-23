@@ -13,8 +13,8 @@ export async function POST(request: Request) {
 
     const assistant = await openai.beta.assistants.create({
       name: "夢想基金創造工具",
-      model: "gpt-4-1106-preview", // 更正模型名稱
-      instructions: "你是夢想基金創造者。我將會給你 1. 夢想名字 2. 每月收入 3. 每月支出 4. 現有夢想基金 5. 每月願意付出金額 6. 夢想基金目標金額。請幫我輸出：1. 需要多久才能存到目標金額（如果需要3個月就輸出「!!3!!」，不需要任何開頭、尾巴詞） 2. 這筆夢想基金預計可以買什麼去圓夢？（以列點式，不需要開頭尾巴詞，輸出「@@iPad、Apple Pencil、筆記本、水杯@@」這樣） 3. 關於此夢想和金額規劃的評語。（不需要開頭尾巴詞，輸出「##{評語}##」）",
+      model: "gpt-4o-mini", // 更正模型名稱
+      instructions: "你是夢想基金創造者。我將會給你 1. 夢想名字 2. 每月收入 3. 每月支出 4. 現有夢想基金 5. 每月願意付出金額 6. 夢想基金目標金額 7. 預計存款的月數。請幫我輸出： 1. 這筆夢想基金預計可以買什麼去圓夢？（以列點式，不需要開頭尾巴詞，輸出「@@iPad、Apple Pencil、筆記本、水杯@@」這樣） 2. 關於此夢想和金額規劃的評語。（不需要開頭尾巴詞，輸出「##{評語}##」）",
     });
 
     const thread = await openai.beta.threads.create();

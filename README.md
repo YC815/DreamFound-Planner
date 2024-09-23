@@ -1,37 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 夢想基金創造工具 | 生產利用工具
 
-## Getting Started
+### DreamFound Planner
 
-First, run the development server:
+## 作品創作動機
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+這次的創作主題是「夢想」。
+我想到，很多時候我們想要的東西只是嘴上說說，像是「我想要一台新手機」、「我想要這台車」等等，但是都沒有實際要去執行的第一步。
+這次我製作的工具可以輸入自己目前的經濟狀況、目標夢想基金等資訊，安排使用者存款並給出建議，引導使用者為自己的夢想踏出第一步。
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 程式框架
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+基於 React 的 Next.js 全端網頁程式框架。電腦需配置[Node.js 22.4.1](https://nodejs.org/en)或更高版本以運行程式。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 啟動方式
 
-To learn more about Next.js, take a look at the following resources:
+### 方法 1 （較簡單）
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. 前往[由 Vercel 託管的網站](https://dream-fund-planner.chen.zone/)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 方法 2 （由本地端執行）
 
-## Deploy on Vercel
+1. 終端機輸入`git clone https://github.com/YC815/DreamFound-Planner.git`
+2. 在專案根目錄新增 .env 資料夾
+3. 在裡面寫入`OPENAI_API_KEY={您的OpenAI API}`
+4. 將終端目錄指定到專案跟目錄
+5. 輸入`npm install`
+6. 輸入`npm run dev`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 使用方式
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# DreamFound-Planner
+1. 輸入夢想名字
+2. 輸入財務狀況（包含：每月收入、每月支出、現有夢想基金、每月願意付出的金額）
+3. 輸入夢想基金目標
+4. 按下「計算存款計畫」按鈕
+5. 等待 AI 結果
+
+## Bug
+
+1. 目前發現按下按鈕後會偶發性的出現資料錯誤。經確認這是 OpenAI 的問題。遇到時請再按一次按鈕等待生成即可。

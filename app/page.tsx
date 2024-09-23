@@ -69,7 +69,7 @@ const Home: React.FC = () => {
             return;
         }
     
-        const prompt = `夢想名字：${dreamName} 每月收入：${incomeNum} 元 每月支出：${expensesNum} 元 現有夢想基金：${savingsNum} 元 每月願意付出金額：${monthlyContribution} 元 夢想基金目標金額：${goalAmountNum} 元`;
+        const prompt = `夢想名字：${dreamName} 每月收入：${incomeNum} 元 每月支出：${expensesNum} 元 現有夢想基金：${savingsNum} 元 每月願意付出金額：${monthlyContribution} 元 夢想基金目標金額：${goalAmountNum} 元 預計存款月數：${Math.floor((Number(goalAmount) - Number(savings)) / Number(monthlyContribution))} `;
         console.log(`構建請求數據: ${prompt}`);
     
         try {
@@ -103,13 +103,13 @@ const Home: React.FC = () => {
     };
 
     const parseResult = (text: string) => {
-        const monthsMatch = text.match(/!!(\d+)!!/);
+        const monthsMatch = Math.floor((Number(goalAmount) - Number(savings)) / Number(monthlyContribution));
         const itemsMatch = text.match(/@@(.+?)@@/);
         const commentMatch = text.match(/##(.+?)##/);
 
         let timeString = '';
         if (monthsMatch) {
-            const months = parseInt(monthsMatch[1]);
+            const months = monthsMatch;
             if (months < 12) {
                 timeString = `${months}個月`;
             } else {
@@ -127,13 +127,14 @@ const Home: React.FC = () => {
     };
 
     return (
-        <div className="flex items-center justify-center" style={{ minHeight: contentHeight, backgroundColor: "rgb(209 213 219)" }}>
-            <div className="bg-gray-300 p-10">
-                <div className="bg-white rounded-lg shadow-lg p-8 w-96 text-center flex flex-col space-y-4 mt-10">
+        <div className="flex items-center justify-center" style={{ minHeight: contentHeight, backgroundColor: "#262626" }}>
+            <div className="bg-neutral-800 p-10">
+                <div className="bg-white rounded-lg shadow-lg p-8 w-[580px] text-center flex flex-col space-y-4 mt-10">
                     <h1 className="text-2xl font-bold text-black">夢想基金創造工具</h1>
                     <div className="text-black border rounded p-4">
-                        <h2 className="text-xl mb-2">夢想名字</h2>
+                        <h2 className="text-xl mb-2 font-bold">夢想主題</h2>
                         <label className="block mb-2">
+                            夢想名字
                             <input
                                 type="text"
                                 className="border rounded w-full p-2 text-black text-center"
@@ -143,7 +144,7 @@ const Home: React.FC = () => {
                         </label>
                     </div>
                     <div className="text-black border rounded p-4">
-                        <h2 className="text-xl mb-2">財務狀況</h2>
+                        <h2 className="text-xl mb-2 font-bold">財務狀況</h2>
                         <label className="block mb-2">
                             每月收入
                             <input
@@ -162,15 +163,7 @@ const Home: React.FC = () => {
                                 onChange={(e) => setExpenses(e.target.value)}
                             />
                         </label>
-                        <label className='block mb-2'>
-                            現有夢想基金
-                            <input
-                                type="number"
-                                className="border rounded w-full p-2 text-black text-center"
-                                value={savings}
-                                onChange={(e) => setSavings(e.target.value)}
-                            />
-                        </label>
+                        
                         <label className='block mb-2'>
                             每月願意付出的金額
                             <input
@@ -183,7 +176,7 @@ const Home: React.FC = () => {
                     </div>
 
                     <div className="text-black border rounded p-4">
-                        <h2 className="text-xl mb-2">夢想基金目標</h2>
+                        <h2 className="text-xl mb-2 font-bold">夢想基金目標</h2>
                         <label className="block mb-2">
                             夢想基金金額
                             <input
@@ -191,6 +184,15 @@ const Home: React.FC = () => {
                                 className="border rounded w-full p-2 text-black text-center"
                                 value={goalAmount}
                                 onChange={(e) => setGoalAmount(e.target.value)}
+                            />
+                        </label>
+                        <label className='block mb-2'>
+                            現有夢想基金
+                            <input
+                                type="number"
+                                className="border rounded w-full p-2 text-black text-center"
+                                value={savings}
+                                onChange={(e) => setSavings(e.target.value)}
                             />
                         </label>
                     </div>
